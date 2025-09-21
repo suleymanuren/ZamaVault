@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import detectEthereumProvider from '@metamask/detect-provider'
 import { BrowserProvider, Contract, JsonRpcProvider } from 'ethers'
-import { Vote, Plus, Users, Clock, Shield, CheckCircle, LogOut, Lock, Eye, EyeOff, Heart, ExternalLink, Trash2, Square } from 'lucide-react'
+import { Vote, Plus, Users, Clock, Shield, CheckCircle, LogOut, Lock, Heart, ExternalLink, Trash2, Square } from 'lucide-react'
 import SimpleConfidentialVoteArtifact from '../SimpleConfidentialVote.json'
 import { createEncryptedVote } from '../lib/fhevm'
 
@@ -19,7 +19,7 @@ declare global {
 }
 
 // Contract deployed address and network config
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '0x10eF703ed9520d97A6750864c8fF3c2363132f19'
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '0x4355e5cf8b33020c389ec746e709C949f986146A'
 const SEPOLIA_RPC_URL = process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || 'https://sepolia.infura.io/v3/62ae9c75c5d94a0486c8c35a1a50b076'
 
 interface Poll {
@@ -167,7 +167,7 @@ export default function ZamaVault() {
           try {
             const winnerInfo = await contractToUse.getWinner(i)
             winner = {
-              winningOptions: winnerInfo[0].map((n: any) => Number(n)),
+              winningOptions: winnerInfo[0].map((n: unknown) => Number(n)),
               maxVotes: Number(winnerInfo[1]),
               hasTie: winnerInfo[2]
             }
@@ -238,9 +238,10 @@ export default function ZamaVault() {
       await provider.send('wallet_switchEthereumChain', [{
         chainId: '0xaa36a7'
       }])
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If the network doesn't exist (error 4902) or unrecognized chain ID, add it first
-      if (error.code === 4902 || error.message?.includes('Unrecognized chain ID')) {
+      const err = error as { code?: number; message?: string }
+      if (err.code === 4902 || err.message?.includes('Unrecognized chain ID')) {
         try {
           await addSepoliaNetwork()
           // After adding, try to switch again
@@ -309,7 +310,8 @@ export default function ZamaVault() {
     setAccount('')
     setProvider(null)
     setContract(null)
-    setPolls([])
+    setActivePolls([])
+    setPastPolls([])
     setNetworkError('')
   }
 
@@ -463,9 +465,10 @@ export default function ZamaVault() {
       await tx.wait()
       alert('Poll deleted successfully!')
       await loadPolls()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting poll:', error)
-      if (error.code === 'ACTION_REJECTED') {
+      const err = error as { code?: string }
+      if (err.code === 'ACTION_REJECTED') {
         // User cancelled transaction - don't show error
         console.log('User cancelled delete poll transaction')
       } else {
@@ -485,9 +488,10 @@ export default function ZamaVault() {
       await tx.wait()
       alert('Poll ended successfully!')
       await loadPolls()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error ending poll:', error)
-      if (error.code === 'ACTION_REJECTED') {
+      const err = error as { code?: string }
+      if (err.code === 'ACTION_REJECTED') {
         console.log('User cancelled end poll transaction')
       } else {
         alert('Failed to end poll. You may not have permission.')
@@ -509,9 +513,10 @@ export default function ZamaVault() {
       await tx.wait()
       alert('All polls cleared successfully!')
       await loadPolls()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error clearing polls:', error)
-      if (error.code === 'ACTION_REJECTED') {
+      const err = error as { code?: string }
+      if (err.code === 'ACTION_REJECTED') {
         console.log('User cancelled clear all polls transaction')
       } else {
         alert('Failed to clear polls. You may not have admin permission.')
@@ -545,8 +550,9 @@ export default function ZamaVault() {
           
           alert('Thank you for the tip! 🙏')
           return
-        } catch (error: any) {
-          if (error.code === 4001) {
+        } catch (error: unknown) {
+          const err = error as { code?: number }
+          if (err.code === 4001) {
             // User cancelled - that's ok
             return
           }
@@ -560,7 +566,7 @@ export default function ZamaVault() {
         alert('💝 Developer address copied to clipboard!\n\n' + 
               'Address: ' + developerAddress + '\n\n' + 
               'You can now send any amount of ETH, USDC, or other tokens!')
-      } catch (clipboardError) {
+      } catch {
         // Final fallback: Show address in prompt
         prompt('💝 Developer tip address (copy this):', developerAddress)
       }
@@ -622,13 +628,13 @@ export default function ZamaVault() {
                   <Heart className="w-4 h-4 mr-2" />
                   Tip Dev
                 </button>
-                <button
-                  onClick={connectWallet}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center"
-                >
-                  <Shield className="w-5 h-5 mr-2" />
-                  Connect Wallet
-                </button>
+              <button
+                onClick={connectWallet}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center"
+              >
+                <Shield className="w-5 h-5 mr-2" />
+                Connect Wallet
+              </button>
               </div>
             )}
           </div>
@@ -677,19 +683,19 @@ export default function ZamaVault() {
 
         {/* Create Poll Section - Only for connected wallets */}
         {account && !networkError && (
-          <div className="mb-8">
-            {!showCreateForm ? (
-              <div className="text-center">
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  disabled={!!networkError}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center mx-auto"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create New Poll
-                </button>
-              </div>
-            ) : (
+            <div className="mb-8">
+              {!showCreateForm ? (
+                <div className="text-center">
+                  <button
+                    onClick={() => setShowCreateForm(true)}
+                    disabled={!!networkError}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center mx-auto"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Create New Poll
+                  </button>
+                </div>
+              ) : (
                 <div className="bg-white rounded-xl border shadow-sm p-6 max-w-2xl mx-auto">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Poll</h2>
                   
@@ -794,12 +800,12 @@ export default function ZamaVault() {
                       Clear All
                     </button>
                   )}
-                  {loading && (
-                    <div className="flex items-center text-gray-600">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-2"></div>
-                      Loading...
-                    </div>
-                  )}
+                {loading && (
+                  <div className="flex items-center text-gray-600">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-2"></div>
+                    Loading...
+                  </div>
+                )}
                 </div>
               </div>
 
@@ -905,20 +911,20 @@ export default function ZamaVault() {
                             <h4 className="font-semibold text-yellow-800">
                               {poll.winner.hasTie ? '🤝 Tie Result' : '🏆 Winner'}
                             </h4>
-                          </div>
+                    </div>
                           <div className="space-y-1">
                             {poll.winner.winningOptions.map((optionIndex) => (
                               <p key={optionIndex} className="text-yellow-800 font-medium">
-                                "{poll.options[optionIndex]}" - {poll.winner!.maxVotes} votes
+                                &quot;{poll.options[optionIndex]}&quot; - {poll.winner!.maxVotes} votes
                               </p>
-                            ))}
-                          </div>
+                  ))}
+                </div>
                           {poll.winner.hasTie && (
                             <p className="text-yellow-700 text-sm mt-2">
                               Multiple options tied with {poll.winner.maxVotes} votes each
                             </p>
-                          )}
-                        </div>
+              )}
+            </div>
                       )}
 
                       {/* Admin/Creator Management Buttons */}
@@ -1044,7 +1050,7 @@ export default function ZamaVault() {
                       <div className="space-y-1">
                         {poll.winner.winningOptions.map((optionIndex) => (
                           <p key={optionIndex} className="text-yellow-800 font-medium">
-                            "{poll.options[optionIndex]}" - {poll.winner!.maxVotes} votes
+                            &quot;{poll.options[optionIndex]}&quot; - {poll.winner!.maxVotes} votes
                           </p>
                         ))}
                       </div>
@@ -1109,8 +1115,8 @@ export default function ZamaVault() {
           <div className="flex items-center justify-center space-x-6 mb-4 text-sm text-gray-600">
             <a 
               href="https://x.com/ume07x" 
-              target="_blank" 
-              rel="noopener noreferrer"
+          target="_blank"
+          rel="noopener noreferrer"
               className="hover:text-blue-600 transition-colors duration-200 flex items-center"
             >
               <ExternalLink className="w-4 h-4 mr-1" />

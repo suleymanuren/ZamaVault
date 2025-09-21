@@ -18,7 +18,7 @@ export const createEncryptedVote = async (
     
     // Generate a deterministic but unique encrypted value based on inputs
     const timestamp = Date.now()
-    const random = Math.random().toString(36).substring(2)
+    // Generate deterministic encrypted values
     
     // Create encrypted handle (in real FHEVM this would be actual encrypted value)
     const encryptedHandle = '0x' + 
@@ -53,14 +53,15 @@ export const createEncryptedVote = async (
 }
 
 // Utility function to validate encrypted input format
-export const isValidEncryptedInput = (input: any): boolean => {
-  return (
+export const isValidEncryptedInput = (input: unknown): boolean => {
+  const typedInput = input as { handles?: unknown[]; inputProof?: string }
+  return !!(
     input &&
-    input.handles &&
-    Array.isArray(input.handles) &&
-    input.handles.length > 0 &&
-    input.inputProof &&
-    typeof input.inputProof === 'string' &&
-    input.inputProof.startsWith('0x')
+    typedInput.handles &&
+    Array.isArray(typedInput.handles) &&
+    typedInput.handles.length > 0 &&
+    typedInput.inputProof &&
+    typeof typedInput.inputProof === 'string' &&
+    typedInput.inputProof.startsWith('0x')
   )
 }
