@@ -2,27 +2,29 @@
 
 A professional decentralized voting platform built with Fully Homomorphic Encryption (FHE) using Zama's FHEVM protocol. ZamaVault ensures complete privacy of votes while maintaining transparency and verifiability with a clean, banking-grade interface.
 
-## 🌟 Features
-
-- **🔒 Complete Privacy**: Votes are encrypted using FHE - results remain hidden until poll ends
-- **🗳️ Multiple Poll Types**: Support for Yes/No, multiple choice, and custom options
-- **⏰ Time-based Polls**: Automatic poll expiration with customizable duration
-- **🚫 Double Vote Prevention**: Each address can only vote once per poll
-- **🔐 FHEVM Integration**: Frontend uses real FHEVM encryption simulation
-- **💼 Professional UI**: Banking-grade interface design
-- **🌐 Cross-platform**: Responsive design for desktop and mobile
-
 ## 🚀 Live Demo
 
-**Frontend**: [Coming Soon - Vercel Deployment]
-**Contract**: [0x10eF703ed9520d97A6750864c8fF3c2363132f19](https://sepolia.etherscan.io/address/0x10eF703ed9520d97A6750864c8fF3c2363132f19)
+**Frontend**: [https://zama-vault.vercel.app](https://zama-vault.vercel.app)  
+**Contract**: [0x4355e5cf8b33020c389ec746e709C949f986146A](https://sepolia.etherscan.io/address/0x4355e5cf8b33020c389ec746e709C949f986146A)  
+**Network**: Sepolia Testnet
+
+## 🌟 Features
+
+- **🔒 Complete Privacy**: Votes are encrypted using FHEVM - individual choices remain private
+- **📊 Transparent Results**: Vote counts and poll results are publicly verifiable
+- **⏰ Time-based Polls**: Automatic poll expiration with countdown timers
+- **🚫 Double Vote Prevention**: Each address can only vote once per poll
+- **👨‍💼 Admin Controls**: Poll management with creator and admin permissions
+- **💼 Professional UI**: Banking-grade interface with modern design
+- **📱 Responsive**: Works seamlessly on desktop and mobile devices
 
 ## 🏗️ Architecture
 
 ### Smart Contract
 - **Network**: Sepolia Testnet
-- **Contract**: `ConfidentialVote.sol` - Main voting logic with FHE
+- **Contract**: `SimpleConfidentialVote.sol` - Voting logic with FHEVM simulation
 - **Verification**: Contract verified on Etherscan
+- **Admin Features**: Poll deletion, ending, and management controls
 
 ### Frontend
 - **Framework**: Next.js 15 with TypeScript
@@ -34,23 +36,16 @@ A professional decentralized voting platform built with Fully Homomorphic Encryp
 
 - **Blockchain**: Ethereum (Sepolia Testnet)
 - **Smart Contracts**: Solidity 0.8.27
-- **Encryption**: Fully Homomorphic Encryption (FHE)
-- **Development**: Hardhat with FHEVM plugin
+- **Encryption**: Fully Homomorphic Encryption (FHEVM)
+- **Development**: Hardhat with TypeScript
 - **Frontend**: Next.js, TypeScript, Tailwind CSS
 - **Wallet Integration**: MetaMask with ethers.js
-
-## 📋 Prerequisites
-
-- **Node.js**: Version 20 or higher
-- **npm**: Package manager
-- **MetaMask**: Browser wallet extension
-- **Sepolia ETH**: For transaction fees
 
 ## ⚡ Quick Start
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/yourusername/ZamaVault.git
+git clone https://github.com/suleymanuren/ZamaVault.git
 cd ZamaVault
 ```
 
@@ -73,7 +68,7 @@ cp frontend/.env.example frontend/.env.local
 
 ### 4. Frontend Environment Variables
 ```env
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x10eF703ed9520d97A6750864c8fF3c2363132f19
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x4355e5cf8b33020c389ec746e709C949f986146A
 NEXT_PUBLIC_NETWORK_NAME=sepolia
 NEXT_PUBLIC_CHAIN_ID=11155111
 NEXT_PUBLIC_SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
@@ -98,7 +93,7 @@ npm run compile
 npm run test
 
 # Deploy to Sepolia
-npx hardhat deploy --network sepolia
+npx hardhat run scripts/deploy-simple-vote.ts --network sepolia
 
 # Verify contract
 npx hardhat verify --network sepolia CONTRACT_ADDRESS
@@ -119,69 +114,48 @@ npx hardhat confidentialVote:getPollInfo --pollid 0 --network sepolia
 npx hardhat confidentialVote:vote --pollid 0 --option 1 --network sepolia
 ```
 
-### Frontend Commands
-```bash
-cd frontend
-
-# Development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
-
 ## 🔐 Security Features
 
-- **FHE Encryption**: All votes encrypted using Fully Homomorphic Encryption
+- **FHEVM Encryption**: All votes encrypted using Fully Homomorphic Encryption simulation
 - **No Private Keys in Frontend**: Secure wallet integration
 - **Input Validation**: Comprehensive validation on all user inputs
 - **Network Protection**: Automatic network switching and validation
-- **Access Control**: Poll creator permissions and voting restrictions
+- **Access Control**: Admin and creator permissions for poll management
 
 ## 📱 User Guide
 
 ### Creating a Poll
 1. Connect your MetaMask wallet
-2. Ensure you're on Sepolia network
+2. Ensure you're on Sepolia network (auto-switching available)
 3. Click "Create New Poll"
 4. Enter poll title and options (2-10 options)
 5. Set duration (1 hour to 1 week)
 6. Confirm transaction
 
 ### Voting on a Poll
-1. Browse active polls
+1. Browse active polls (no wallet connection required to view)
 2. Click "Vote" on your preferred option
-3. Confirm the encrypted transaction
-4. Your vote is now privately recorded!
+3. Connect wallet if not already connected
+4. Confirm the encrypted transaction
+5. Your vote is now privately recorded!
 
-### Viewing Results
-- Click the eye icon to toggle result visibility
-- Results show "Encrypted" status during active voting
-- Final results revealed after poll ends
+### Admin Features
+- **Poll Creators**: Can end or delete their own polls
+- **Admin**: Can delete any poll or clear all polls
+- **Vote Counts**: Real-time display of votes per option
 
-## 🌐 Deployment
+## 🌐 Vercel Deployment
 
-### Vercel Deployment
-1. Fork this repository
-2. Connect to Vercel
-3. Set environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_CONTRACT_ADDRESS`
-   - `NEXT_PUBLIC_NETWORK_NAME`
-   - `NEXT_PUBLIC_CHAIN_ID`
-   - `NEXT_PUBLIC_SEPOLIA_RPC_URL`
-4. Deploy!
-
-### Contract Deployment
-```bash
-# Deploy to Sepolia
-npx hardhat deploy --network sepolia
-
-# Verify on Etherscan
-npx hardhat verify --network sepolia YOUR_CONTRACT_ADDRESS
+### Environment Variables for Vercel
+Set these in your Vercel dashboard:
+```env
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x4355e5cf8b33020c389ec746e709C949f986146A
+NEXT_PUBLIC_NETWORK_NAME=sepolia
+NEXT_PUBLIC_CHAIN_ID=11155111
+NEXT_PUBLIC_SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
 ```
+
+**⚠️ Security Note**: Only public environment variables (prefixed with `NEXT_PUBLIC_`) are exposed to the frontend. Private keys and sensitive data are never included.
 
 ## 🧪 Testing
 
@@ -190,11 +164,49 @@ npx hardhat verify --network sepolia YOUR_CONTRACT_ADDRESS
 npm run test
 
 # Run specific test
-npx hardhat test test/ConfidentialVote.ts
+npx hardhat test test/SimpleConfidentialVote.ts
 
 # Test on Sepolia
 npx hardhat test --network sepolia
 ```
+
+## 🏆 Built for Zama Developer Program
+
+This project was created for the **Zama Developer Program** competition, showcasing:
+
+### ✅ FHEVM Integration
+- Real homomorphic encryption simulation in frontend
+- Privacy-preserving vote counting
+- Transparent results without revealing individual votes
+
+### ✅ Professional Design
+- Banking-grade UI/UX with modern design principles
+- Responsive layout for all devices
+- Intuitive user experience
+
+### ✅ Complete dApp
+- Full-stack application with smart contracts and frontend
+- MetaMask integration with automatic network switching
+- Real-time poll management and voting
+
+### ✅ Security Focus
+- Privacy-first approach to voting
+- Secure environment variable handling
+- No sensitive data exposure in frontend
+
+## 🎯 Use Cases
+
+- **DAO Governance**: Private voting for decentralized organizations
+- **Community Polls**: Anonymous opinion gathering
+- **Corporate Surveys**: Confidential employee feedback
+- **Market Research**: Private consumer preference polling
+- **Elections**: Transparent yet private voting systems
+
+## 👨‍💻 Developer
+
+**Created by**: [@ume07x](https://x.com/ume07x)  
+**Discord**: ume06  
+**Wallet**: 0xAc7539F65d98313ea4bAbef870F6Ae29107aD4ce
 
 ## 🤝 Contributing
 
@@ -208,27 +220,21 @@ npx hardhat test --network sepolia
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🏆 Built for Zama Developer Program
-
-This project was created for the Zama Developer Program competition, showcasing:
-- **FHEVM Integration**: Real homomorphic encryption in both contracts and frontend
-- **Professional Design**: Banking-grade UI/UX
-- **Complete dApp**: Full-stack application with smart contracts and frontend
-- **Security Focus**: Privacy-first approach to voting
-
 ## 🔗 Links
 
-- **Live Demo**: [Coming Soon]
-- **Contract**: [Sepolia Etherscan](https://sepolia.etherscan.io/address/0x10eF703ed9520d97A6750864c8fF3c2363132f19)
+- **Live Demo**: [https://zama-vault.vercel.app](https://zama-vault.vercel.app)
+- **Contract**: [Sepolia Etherscan](https://sepolia.etherscan.io/address/0x4355e5cf8b33020c389ec746e709C949f986146A)
 - **Zama**: [zama.ai](https://zama.ai)
 - **FHEVM Docs**: [docs.zama.ai/fhevm](https://docs.zama.ai/fhevm)
 
 ## 📞 Support
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/ZamaVault/issues)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/suleymanuren/ZamaVault/issues)
 - **Documentation**: [FHEVM Documentation](https://docs.zama.ai/fhevm)
 - **Community**: [Zama Discord](https://discord.zama.ai)
 
 ---
 
 **Built with ❤️ using Zama FHEVM**
+
+*Demonstrating the power of Fully Homomorphic Encryption in decentralized voting applications*
